@@ -29,3 +29,5 @@ SQLAlchemy==1.4.22
 tabulate==0.8.10
 urllib3==1.26.16
 yarl==1.9.2
+logdecorator==2.4
+python-decouple==3.8

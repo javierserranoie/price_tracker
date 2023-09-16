@@ -14,6 +14,13 @@ from tabulate import tabulate
 from typing import List
 import numpy as np
 import asyncio
+import logging
+from logdecorator import log_on_start, log_on_error
+from decouple import config
+
+logging.basicConfig(level=logging.INFO)  # Set your desired log level
+
+logger = logging.getLogger(__name__)
 
 
 # In[ ]:
@@ -37,6 +44,10 @@ class PriceNotFoundException(Exception):
     pass
 
 
+@log_on_start(logging.DEBUG, "Start downloading {url:s}...")
+@log_on_error(logging.ERROR, "Error on downloading {url:s}: {e!r}",
+              on_exceptions=IOError,
+              reraise=True)
 def get_url_content(url: str) -> str:
     # Send an HTTP GET request to the website and retrieve the HTML content
     response = requests.get(url, headers=HEADERS)
@@ -45,6 +56,10 @@ def get_url_content(url: str) -> str:
     return response.text
 
 
+@log_on_start(logging.DEBUG, "Extract price")
+@log_on_error(logging.ERROR, "Error on {e!r}",
+              on_exceptions=Exception,
+              reraise=True)
 def extract_price_from_html(text: str, element_xpaths: List[str]) -> str:
     # Parse the HTML content using lxml
     tree = html.fromstring(text)
@@ -103,21 +118,21 @@ def process_dataset(df):
     return tabulate(result_df, headers='keys', tablefmt='fancy_grid')
 
 
-def get_telegram_info():
-    token = os.getenv("TELEGRAM_TOKEN", None)
-    chat_id = os.getenv("TELEGRAM_CHAT_ID", None)
+def get_telegram_config():
+    token = config("TELEGRAM_TOKEN")
+    chat_id = config("TELEGRAM_CHAT_ID")
     
-    if token is None:
+    if not token:
         raise Exception("TELEGRAM_TOKEN not found")  
 
-    if chat_id is None:
+    if not chat_id:
         raise Exception("TELEGRAM_CHAT_ID not found")
     
     return token, chat_id
 
 
 async def asend_message(html_message):
-    token, chat_id = get_telegram_info()
+    token, chat_id = get_telegram_config()
     _html = telegram.constants.ParseMode.HTML
     bot = telegram.Bot(token)
     await bot.send_message(chat_id=chat_id, disable_notification=True, parse_mode=_html, text=html_message)
