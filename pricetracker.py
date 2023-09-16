@@ -30,7 +30,7 @@ PARQUET_PATH = "pc_prices.parquet"
 NOW = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Safari/537.36"
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0"
 }
 
 AMZ_XPATHS = ['//*[@id="corePriceDisplay_desktop_feature_div"]/div[1]/span[3]/span[2]/span[1]', 
