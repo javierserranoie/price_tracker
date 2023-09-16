@@ -34,7 +34,8 @@ HEADERS = {
 }
 
 AMZ_XPATHS = ['//*[@id="corePriceDisplay_desktop_feature_div"]/div[1]/span[3]/span[2]/span[1]', 
-                 '//*[@id="corePriceDisplay_desktop_feature_div"]/div[1]/span[2]/span[2]/span[1]']
+                 '//*[@id="corePriceDisplay_desktop_feature_div"]/div[1]/span[2]/span[2]/span[1]',
+                 '/html/body/div[2]/div/div[8]/div[4]/div[4]/div[12]/div/div[1]/div[3]/div[1]/span[3]/span[2]/span[1]']
 
 
 COM_XPATHS = ['//*[@id="actualprice"]']
@@ -44,7 +45,7 @@ class PriceNotFoundException(Exception):
     pass
 
 
-@log_on_start(logging.DEBUG, "Start downloading {url:s}...")
+@log_on_start(logging.INFO, "Start downloading {url:s}...")
 @log_on_error(logging.ERROR, "Error on downloading {url:s}: {e!r}",
               on_exceptions=IOError,
               reraise=True)
@@ -56,7 +57,7 @@ def get_url_content(url: str) -> str:
     return response.text
 
 
-@log_on_start(logging.DEBUG, "Extract price")
+@log_on_start(logging.INFO, "Extract price")
 @log_on_error(logging.ERROR, "Error on {e!r}",
               on_exceptions=Exception,
               reraise=True)
@@ -68,14 +69,14 @@ def extract_price_from_html(text: str, element_xpaths: List[str]) -> str:
     for element_xpath in element_xpaths:
         try:
             return tree.xpath(element_xpath)[0].text
-        except IndexError:
+        except IndexError as e:
             pass
-    raise PriceNotFoundException("price not found")
+    raise PriceNotFoundException(f"price not found")
 
 
 @backoff.on_exception(backoff.expo, 
                       PriceNotFoundException, 
-                      max_tries=10,
+                      max_tries=5,
                       jitter=None
                       )
 def get_prices(tracker: dict, element_xpaths: List[str], round: int = 1, provider: str= None) -> dict:
@@ -87,9 +88,12 @@ def get_prices(tracker: dict, element_xpaths: List[str], round: int = 1, provide
         if url is None:
             ans[id] = np.nan
         else:
-            text = get_url_content(url)
-            price = extract_price_from_html(text, element_xpaths)
-            ans[id] = float(price.replace(',', '.')) + round
+            try:
+                text = get_url_content(url)
+                price = extract_price_from_html(text, element_xpaths)
+                ans[id] = float(price.replace(',', '.')) + round
+            except:
+                raise PriceNotFoundException(f"price not found for {url}")
     return ans
 
 
