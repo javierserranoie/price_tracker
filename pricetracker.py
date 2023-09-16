@@ -34,8 +34,8 @@ HEADERS = {
 }
 
 AMZ_XPATHS = ['//*[@id="corePriceDisplay_desktop_feature_div"]/div[1]/span[3]/span[2]/span[1]', 
-                 '//*[@id="corePriceDisplay_desktop_feature_div"]/div[1]/span[2]/span[2]/span[1]',
-                 '/html/body/div[2]/div/div[8]/div[4]/div[4]/div[12]/div/div[1]/div[3]/div[1]/span[3]/span[2]/span[1]']
+              '//*[@id="corePriceDisplay_desktop_feature_div"]/div[1]/span[2]/span[2]/span[1]',
+              '/html/body/div[2]/div/div[8]/div[4]/div[4]/div[12]/div/div[1]/div[3]/div[1]/span[3]/span[2]/span[1]']
 
 
 COM_XPATHS = ['//*[@id="actualprice"]']
@@ -58,7 +58,7 @@ def get_url_content(url: str) -> str:
 
 
 @log_on_start(logging.INFO, "Extract price")
-@log_on_error(logging.ERROR, "Error on {e!r}",
+@log_on_error(logging.ERROR, "Error to parse {text:s} on {e!r}",
               on_exceptions=Exception,
               reraise=True)
 def extract_price_from_html(text: str, element_xpaths: List[str]) -> str:
