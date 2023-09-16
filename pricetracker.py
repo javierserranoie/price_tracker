@@ -33,7 +33,7 @@ AMZ_XPATHS = ['//*[@id="corePriceDisplay_desktop_feature_div"]/div[1]/span[3]/sp
 COM_XPATHS = ['//*[@id="actualprice"]']
 
 
-class PriceNotFoundException(BaseException):
+class PriceNotFoundException(Exception):
     pass
 
 
@@ -60,7 +60,7 @@ def extract_price_from_html(text: str, element_xpaths: List[str]) -> str:
 
 @backoff.on_exception(backoff.expo, 
                       PriceNotFoundException, 
-                      max_tries=5,
+                      max_tries=10,
                       jitter=None
                       )
 def get_prices(tracker: dict, element_xpaths: List[str], round: int = 1, provider: str= None) -> dict:
@@ -114,6 +114,7 @@ def get_telegram_info():
         raise Exception("TELEGRAM_CHAT_ID not found")
     
     return token, chat_id
+
 
 async def asend_message(html_message):
     token, chat_id = get_telegram_info()
