@@ -3,7 +3,6 @@
 
 # In[ ]:
 
-import os
 import requests
 from lxml import html
 import backoff
@@ -18,7 +17,7 @@ import logging
 from logdecorator import log_on_start, log_on_error
 from decouple import config
 
-logging.basicConfig(level=logging.INFO)  # Set your desired log level
+logging.basicConfig(level=logging.DEBUG)  # Set your desired log level
 
 logger = logging.getLogger(__name__)
 
@@ -45,19 +44,17 @@ class PriceNotFoundException(Exception):
     pass
 
 
-@log_on_start(logging.INFO, "Start downloading {url:s}...")
+@log_on_start(logging.DEBUG, "Start downloading {url:s}...")
 @log_on_error(logging.ERROR, "Error on downloading {url:s}: {e!r}",
               on_exceptions=IOError,
               reraise=True)
 def get_url_content(url: str) -> str:
-    # Send an HTTP GET request to the website and retrieve the HTML content
     response = requests.get(url, headers=HEADERS)
-
     response.raise_for_status()
     return response.text
 
 
-@log_on_start(logging.INFO, "Extract price")
+@log_on_start(logging.DEBUG, "Extract price")
 @log_on_error(logging.ERROR, "Error to parse {text:s} on {e!r}",
               on_exceptions=Exception,
               reraise=True)
@@ -69,7 +66,7 @@ def extract_price_from_html(text: str, element_xpaths: List[str]) -> str:
     for element_xpath in element_xpaths:
         try:
             return tree.xpath(element_xpath)[0].text
-        except IndexError as e:
+        except IndexError:
             pass
     raise PriceNotFoundException(f"price not found")
 
