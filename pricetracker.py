@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 # In[ ]:
 
-PARQUET_PATH = "pc_prices.parquet"
+PARQUET_PATH = f"{config('LOCATION')}/pc_prices.parquet"
     
 NOW = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
